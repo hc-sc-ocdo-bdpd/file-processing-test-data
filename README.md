@@ -10,8 +10,6 @@ You can install this package directly from the GitHub repository using pip:
 pip install git+https://github.com/hc-sc-ocdo-bdpd/file-processing-test-data.git@main
 ```
 
-Replace `v1.0.0` with the appropriate tag or branch name if necessary.
-
 # Usage
 
 To access the test files in your code:
