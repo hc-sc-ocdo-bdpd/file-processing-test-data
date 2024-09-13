@@ -7,7 +7,7 @@ This repository contains test files for use with the file-processing suite of li
 You can install this package directly from the GitHub repository using pip:
 
 ```bash
-pip install git+https://github.com/hc-sc-ocdo-bdpd/file-processing-test-data.git@v1.0.0
+pip install git+https://github.com/hc-sc-ocdo-bdpd/file-processing-test-data.git@main
 ```
 
 Replace `v1.0.0` with the appropriate tag or branch name if necessary.
