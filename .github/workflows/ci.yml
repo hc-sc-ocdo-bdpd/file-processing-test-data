@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-upstream-libraries:
+    name: Test All Upstream Libraries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo:
+          - file-processing
+          - file-processing-ocr
+          - file-processing-transcription
+          - file-processing-analytics
+
+    steps:
+      - name: Check out file-processing-test-data
+        uses: actions/checkout@v3
+
+      - name: Clone and test ${{ matrix.repo }} repository
+        run: |
+          git clone https://github.com/hc-sc-ocdo-bdpd/${{ matrix.repo }}.git
+          cd ${{ matrix.repo }}
+          ./ci.yml
