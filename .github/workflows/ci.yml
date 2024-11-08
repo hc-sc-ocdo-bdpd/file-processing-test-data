@@ -2,41 +2,104 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  test-upstream-libraries:
-    name: Test All Upstream Libraries
+  test-file-processing-analytics:
+    name: Test file-processing-analytics
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        repo:
-          - file-processing
-          - file-processing-ocr
-          - file-processing-transcription
-          - file-processing-analytics
 
     steps:
-      - name: Check out file-processing-test-data
-        uses: actions/checkout@v3
+    - name: Clone file-processing-analytics repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-analytics
+        path: file-processing-analytics
 
-      - name: Clone ${{ matrix.repo }} repository
-        run: |
-          git clone https://github.com/hc-sc-ocdo-bdpd/${{ matrix.repo }}.git
-          cd ${{ matrix.repo }}
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10.4
 
-      - name: Build Docker image for ${{ matrix.repo }}
-        run: |
-          cd ${{ matrix.repo }}
-          docker build -t ${{ matrix.repo }}-tests .
+    - name: Build Docker image for file-processing-analytics
+      run: |
+        cd file-processing-analytics
+        docker build -t file-processing-analytics-tests .
 
-      - name: Run unit tests in Docker container for ${{ matrix.repo }}
-        run: |
-          docker run --rm ${{ matrix.repo }}-tests pytest tests/unit
+    - name: Run tests in Docker container for file-processing-analytics
+      run: |
+        docker run --rm file-processing-analytics-tests pytest tests
 
-      - name: Run integration tests in Docker container for ${{ matrix.repo }}
-        run: |
-          docker run --rm ${{ matrix.repo }}-tests pytest tests/integration || echo "No integration tests found"
+  test-file-processing-ocr:
+    name: Test file-processing-ocr
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing-ocr repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-ocr
+        path: file-processing-ocr
+
+    - name: Clone file-processing repository to get Dockerfile
+      run: git clone https://github.com/hc-sc-ocdo-bdpd/file-processing.git
+
+    - name: Build Docker image for file-processing-ocr
+      run: |
+        docker build -t file-processing-ocr-tests ./file-processing
+
+    - name: Run tests in Docker container for file-processing-ocr
+      run: |
+        docker run --rm -v ${{ github.workspace }}/file-processing-ocr:/app -w /app file-processing-ocr-tests pytest tests
+
+  test-file-processing-transcription:
+    name: Test file-processing-transcription
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing-transcription repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-transcription
+        path: file-processing-transcription
+
+    - name: Clone file-processing repository to get Dockerfile
+      run: git clone https://github.com/hc-sc-ocdo-bdpd/file-processing.git
+
+    - name: Build Docker image for file-processing-transcription
+      run: |
+        docker build -t file-processing-transcription-tests ./file-processing
+
+    - name: Run tests in Docker container for file-processing-transcription
+      run: |
+        docker run --rm -v ${{ github.workspace }}/file-processing-transcription:/app -w /app file-processing-transcription-tests pytest tests
+
+  test-file-processing:
+    name: Test file-processing
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing
+        path: file-processing
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10.4
+
+    - name: Build Docker image for file-processing
+      run: |
+        cd file-processing
+        docker build -t file-processing-tests .
+
+    - name: Run tests in Docker container for file-processing
+      run: |
+        docker run --rm file-processing-tests pytest tests/unit
