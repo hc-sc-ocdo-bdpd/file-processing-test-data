@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test-file-processing-analytics:
+    name: Test file-processing-analytics
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing-analytics repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-analytics
+        path: file-processing-analytics
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10.4
+
+    - name: Build Docker image for file-processing-analytics
+      run: |
+        cd file-processing-analytics
+        docker build -t file-processing-analytics-tests .
+
+    - name: Run tests in Docker container for file-processing-analytics
+      run: |
+        docker run --rm file-processing-analytics-tests pytest tests
+
+  test-file-processing-ocr:
+    name: Test file-processing-ocr
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing-ocr repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-ocr
+        path: file-processing-ocr
+
+    - name: Clone file-processing repository to get Dockerfile
+      run: git clone https://github.com/hc-sc-ocdo-bdpd/file-processing.git
+
+    - name: Build Docker image for file-processing-ocr
+      run: |
+        docker build -t file-processing-ocr-tests ./file-processing
+
+    - name: Run tests in Docker container for file-processing-ocr
+      run: |
+        docker run --rm -v ${{ github.workspace }}/file-processing-ocr:/app -w /app file-processing-ocr-tests pytest tests
+
+  test-file-processing-transcription:
+    name: Test file-processing-transcription
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing-transcription repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing-transcription
+        path: file-processing-transcription
+
+    - name: Clone file-processing repository to get Dockerfile
+      run: git clone https://github.com/hc-sc-ocdo-bdpd/file-processing.git
+
+    - name: Build Docker image for file-processing-transcription
+      run: |
+        docker build -t file-processing-transcription-tests ./file-processing
+
+    - name: Run tests in Docker container for file-processing-transcription
+      run: |
+        docker run --rm -v ${{ github.workspace }}/file-processing-transcription:/app -w /app file-processing-transcription-tests pytest tests
+
+  test-file-processing:
+    name: Test file-processing
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone file-processing repository
+      uses: actions/checkout@v3
+      with:
+        repository: hc-sc-ocdo-bdpd/file-processing
+        path: file-processing
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.10.4
+
+    - name: Build Docker image for file-processing
+      run: |
+        cd file-processing
+        docker build -t file-processing-tests .
+
+    - name: Run tests in Docker container for file-processing
+      run: |
+        docker run --rm file-processing-tests pytest tests/unit
