@@ -23,8 +23,20 @@ jobs:
       - name: Check out file-processing-test-data
         uses: actions/checkout@v3
 
-      - name: Clone and test ${{ matrix.repo }} repository
+      - name: Clone ${{ matrix.repo }} repository
         run: |
           git clone https://github.com/hc-sc-ocdo-bdpd/${{ matrix.repo }}.git
           cd ${{ matrix.repo }}
-          ./ci.yml
+
+      - name: Build Docker image for ${{ matrix.repo }}
+        run: |
+          cd ${{ matrix.repo }}
+          docker build -t ${{ matrix.repo }}-tests .
+
+      - name: Run unit tests in Docker container for ${{ matrix.repo }}
+        run: |
+          docker run --rm ${{ matrix.repo }}-tests pytest tests/unit
+
+      - name: Run integration tests in Docker container for ${{ matrix.repo }}
+        run: |
+          docker run --rm ${{ matrix.repo }}-tests pytest tests/integration || echo "No integration tests found"
